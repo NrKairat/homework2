@@ -4,23 +4,23 @@ package homework.homework2;
  * Created by кайрат on 23.11.2016.
  */
 public class UserWriteThread implements Runnable {
-    String name;
-    String email;
-    int delay;
-    UserWriteThread(String name,String email,int delay){
+    private String name;
+    private String email;
+    private int limit;
+
+    UserWriteThread(String name,String email, int limit){
         this.name = name;
         this.email = email;
-        this.delay=delay;
+        this.limit = limit;
     }
     public void run() {
-        try {
-            Thread.sleep(delay*PhoneBook.threadSleepWrite);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        for (int i = 0; i < limit; i++) {
+            User u =new User(name+i, email+i);
+            PhoneBook.writeToByte(u,name+i);
+            PhoneBook.incrementCountWrite();
         }
-        User u =new User(name, email);
-        PhoneBook.writeToByte(u,name);
-        PhoneBook.incrementCountWrite();
+
 
     }
 }

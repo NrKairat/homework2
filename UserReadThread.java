@@ -4,27 +4,24 @@ package homework.homework2;
  * Created by кайрат on 23.11.2016.
  */
 public class UserReadThread extends Thread{
-    String name;
-    int delay;
-    User user;
+    private String name;
+    private int limit;
+    private String email;
 
-    public User getUser() {
-        return user;
-    }
-
-    UserReadThread(String name, int delay){
+    UserReadThread(String name,String email,int limit){
         this.name = name;
-        this.delay=delay;
+        this.limit = limit;
+        this.email = email;
 
     }
     public void run() {
-        try {
-            Thread.sleep(delay*PhoneBook.threadSleepRead);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for (int i = 0; i < limit; i++) {
+            User user = PhoneBook.readByte(name+i);
+            PhoneBook.listU.add(user);
+            PhoneBook.incrementCountRead();
         }
-        user = PhoneBook.readByte(name);
-        PhoneBook.incrementCountRead();
+
+
 
     }
 }

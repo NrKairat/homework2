@@ -8,21 +8,16 @@ import java.util.ArrayList;
  * Created by кайрат on 23.11.2016.
  */
 public class PhoneBook extends Thread{
-    public static int threadSleepRead=100;
-    public static int  threadSleepWrite=100;
-
     private String name="Коля";
     private String email="Kolyan@gmail.com";
     private String ravno="";
     private String probel="";
-    private int limit = 200;
+    private int limit = 1000;
     private int percent =0;
     private int limit2=40;
-    private int threadSleepMain=100;
     private static int countRead=0;
-    private static int countWrite=0;
-    private ArrayList<UserReadThread> listURT; //список потоков
-    private ArrayList<User> listU; //список пользователей
+    public static int countWrite=0;
+    public static ArrayList<User> listU; //список пользователей
 
 
     public static synchronized void incrementCountRead(){
@@ -32,95 +27,70 @@ public class PhoneBook extends Thread{
         countWrite++;
     }
     public void recovery(){
-        listURT = new ArrayList<UserReadThread>();
+
         listU = new ArrayList<User>();
 
-        for (int i = 0; i < limit; i++) { // Создаем 200 потоков на чтение и заносим их в список потоков
-            Thread rbThread = new UserReadThread(name+i,i);
-            rbThread.start();
-            UserReadThread urt = (UserReadThread)rbThread;
-            listURT.add(urt);
-        }
+        Thread rbThread = new UserReadThread(name,email,limit);
+        rbThread.start();
+
+        System.out.println();
         System.out.println("Восстановление");
-        for (int i = 0; i < limit; i++) {
-            try {
-                Thread.sleep(threadSleepMain);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
-            percent=countRead/2+1; //Считаем процент
-            if(percent%5==0){ravno+="="; limit2--;} // Добавлем шкалу загрузки, и уменьшаем кол-во пробелов справа
+        ravno="";
+        limit2=10;
+        int limitLow=0;
+        probel="";
+        countWrite=0;
 
-
+        while (rbThread.isAlive()){
+            probel="";
+            percent=countRead*100/limit;
             for (int j = 0; j < limit2; j++){
                 probel+=" ";
             }
-
+            if(percent-limitLow>0){limitLow+=10;ravno+="="; limit2--;}
             if(percent<10){System.out.print("\r  "+percent+"% ["+ravno+">"+probel+"]");}
             if(percent>10&&percent<100){System.out.print("\r "+percent+"% ["+ravno+">"+probel+"]");}
             if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
             probel="";
-
         }
 
-        while (countRead<200){ //Проверяем что все потоки завершились
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
 
-        for (UserReadThread userReadThread:listURT){
-            listU.add(userReadThread.getUser());
-        }
+
+
         System.out.println();
         System.out.println("Восстановление Завершено");
+
 
     }
     public void save(){
 
         ravno="";
-        limit=200;
-        limit2=40;
+        limit2=10;
+        int limitLow=0;
         probel="";
         countWrite=0;
         System.out.println();
         System.out.println("Сохранение");
 
-        for (int i = 0; i < limit; i++) {
-            Thread uwThread = new Thread(new UserWriteThread(name+i, email+i,i));
-            uwThread.start();
-        }
+        Thread uwThread = new Thread(new UserWriteThread(name, email,limit));
+        uwThread.start();
 
-        for (int i = 0; i < limit; i++) {
-            try {
-                Thread.sleep(threadSleepMain);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            percent=i*100/limit+1;
-            if(percent%5==0){ravno+="="; limit2--;}
-
-
+        while (uwThread.isAlive()){
+            probel="";
+            percent=countWrite*100/limit+1;
             for (int j = 0; j < limit2; j++){
                 probel+=" ";
             }
-
+            if(percent-limitLow>0){limitLow+=10;ravno+="="; limit2--;}
             if(percent<10){System.out.print("\r  "+percent+"% ["+ravno+">"+probel+"]");}
             if(percent>10&&percent<100){System.out.print("\r "+percent+"% ["+ravno+">"+probel+"]");}
             if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
             probel="";
         }
-        while (countWrite<200){
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+
+        if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
         System.out.println();
         System.out.println("Сохранение завершено");
     }
