@@ -30,42 +30,10 @@ public class PhoneBook extends Thread{
     public static synchronized void incrementCountRead(){
         countRead++;
     }
-    public static synchronized void incrementCountWrite(){
-        countWrite++;
-    }
+    public static synchronized void incrementCountWrite(){countWrite++;    }
     public void recovery(){
         readWithThread();
         showProgressBar(rbThread,"Восстановление",cr);
-
-//        System.out.println();
-//        System.out.println("Восстановление");
-//
-//        progressBar="";
-//        limitSpace=10;
-//        int limitLow=0;
-//        space="";
-//        countWrite=0;
-//
-//        while (rbThread.isAlive()){
-//            space="";
-//            percent=countRead*100/limitFiles;
-//            for (int j = 0; j < limitSpace; j++){
-//                space+=" ";
-//            }
-//            if(percent-limitLow>0){limitLow+=10;progressBar+="="; limitSpace--;}
-//            if(percent<10){System.out.print("\r  "+percent+"% ["+progressBar+">"+space+"]");}
-//            if(percent>10&&percent<100){System.out.print("\r "+percent+"% ["+progressBar+">"+space+"]");}
-//            if(percent==100){System.out.print("\r"+percent+"% ["+progressBar+">"+space+"]");}
-//            space="";
-//        }
-//
-//        if(percent==100){System.out.print("\r"+percent+"% ["+progressBar+">"+space+"]");}
-//
-//
-//
-//        System.out.println();
-//        System.out.println("Восстановление Завершено");
-
 
     }
     public void save(){
