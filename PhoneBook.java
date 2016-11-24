@@ -10,13 +10,20 @@ import java.util.ArrayList;
 public class PhoneBook extends Thread{
     private String name="Коля";
     private String email="Kolyan@gmail.com";
-    private String ravno="";
-    private String probel="";
-    private int limit = 1000;
+    private String progressBar="";
+    private String space="";
+    private int limitFiles = 100;
     private int percent =0;
-    private int limit2=40;
+    private int limitSpace=40;
+    int limitLow=0;
+    private Thread uwThread;
+    private Thread rbThread;
     private static int countRead=0;
-    public static int countWrite=0;
+    private static int countWrite=0;
+    // Для хранения ссылки на количество потоков, используются 2 класса CountW и CountR, возвращающие соответственно
+    // countWrite и countRead, унаследованные от класса Count с методом getCount()
+    private CountW cw = new CountW();
+    private CountR cr = new CountR();
     public static ArrayList<User> listU; //список пользователей
 
 
@@ -27,72 +34,43 @@ public class PhoneBook extends Thread{
         countWrite++;
     }
     public void recovery(){
+        readWithThread();
+        showProgressBar(rbThread,"Восстановление",cr);
 
-        listU = new ArrayList<User>();
-
-        Thread rbThread = new UserReadThread(name,email,limit);
-        rbThread.start();
-
-        System.out.println();
-        System.out.println("Восстановление");
-
-        ravno="";
-        limit2=10;
-        int limitLow=0;
-        probel="";
-        countWrite=0;
-
-        while (rbThread.isAlive()){
-            probel="";
-            percent=countRead*100/limit;
-            for (int j = 0; j < limit2; j++){
-                probel+=" ";
-            }
-            if(percent-limitLow>0){limitLow+=10;ravno+="="; limit2--;}
-            if(percent<10){System.out.print("\r  "+percent+"% ["+ravno+">"+probel+"]");}
-            if(percent>10&&percent<100){System.out.print("\r "+percent+"% ["+ravno+">"+probel+"]");}
-            if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
-            probel="";
-        }
-
-        if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
-
-
-
-        System.out.println();
-        System.out.println("Восстановление Завершено");
+//        System.out.println();
+//        System.out.println("Восстановление");
+//
+//        progressBar="";
+//        limitSpace=10;
+//        int limitLow=0;
+//        space="";
+//        countWrite=0;
+//
+//        while (rbThread.isAlive()){
+//            space="";
+//            percent=countRead*100/limitFiles;
+//            for (int j = 0; j < limitSpace; j++){
+//                space+=" ";
+//            }
+//            if(percent-limitLow>0){limitLow+=10;progressBar+="="; limitSpace--;}
+//            if(percent<10){System.out.print("\r  "+percent+"% ["+progressBar+">"+space+"]");}
+//            if(percent>10&&percent<100){System.out.print("\r "+percent+"% ["+progressBar+">"+space+"]");}
+//            if(percent==100){System.out.print("\r"+percent+"% ["+progressBar+">"+space+"]");}
+//            space="";
+//        }
+//
+//        if(percent==100){System.out.print("\r"+percent+"% ["+progressBar+">"+space+"]");}
+//
+//
+//
+//        System.out.println();
+//        System.out.println("Восстановление Завершено");
 
 
     }
     public void save(){
-
-        ravno="";
-        limit2=10;
-        int limitLow=0;
-        probel="";
-        countWrite=0;
-        System.out.println();
-        System.out.println("Сохранение");
-
-        Thread uwThread = new Thread(new UserWriteThread(name, email,limit));
-        uwThread.start();
-
-        while (uwThread.isAlive()){
-            probel="";
-            percent=countWrite*100/limit+1;
-            for (int j = 0; j < limit2; j++){
-                probel+=" ";
-            }
-            if(percent-limitLow>0){limitLow+=10;ravno+="="; limit2--;}
-            if(percent<10){System.out.print("\r  "+percent+"% ["+ravno+">"+probel+"]");}
-            if(percent>10&&percent<100){System.out.print("\r "+percent+"% ["+ravno+">"+probel+"]");}
-            if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
-            probel="";
-        }
-
-        if(percent==100){System.out.print("\r"+percent+"% ["+ravno+">"+probel+"]");}
-        System.out.println();
-        System.out.println("Сохранение завершено");
+        saveWithThread();
+        showProgressBar(uwThread,"Сохранение",cw);
     }
     public void showAll(){
         int numberLine=0;
@@ -104,6 +82,41 @@ public class PhoneBook extends Thread{
             if(numberLine%99==0){System.out.printf("%-25s%-25s%n",user.getName(),user.getEmail());}
             numberLine++;
         }
+    }
+    public void saveWithThread(){
+        uwThread = new Thread(new UserWriteThread(name, email,limitFiles));
+        uwThread.start();
+
+    }
+    public void readWithThread(){
+        listU = new ArrayList<User>();
+        rbThread = new UserReadThread(name,email,limitFiles);
+        rbThread.start();
+    }
+    public void showProgressBar(Thread t, String title, Count count){
+        progressBar="";
+        limitSpace=10;
+        limitLow=0;
+
+        System.out.println();
+        System.out.println(title);
+
+        while (t.isAlive()){
+            space="";
+            percent=count.getCount()*100/limitFiles;
+            for (int j = 0; j < limitSpace; j++){
+                space+=" ";
+            }
+            if(percent-limitLow>0){limitLow+=10;progressBar+="="; limitSpace--;}
+            if(percent<10){System.out.print("\r  "+percent+"% ["+progressBar+">"+space+"]");}
+            if(percent>10&&percent<100){System.out.print("\r "+percent+"% ["+progressBar+">"+space+"]");}
+            if(percent==100){System.out.print("\r"+percent+"% ["+progressBar+">"+space+"]");}
+            space="";
+        }
+        percent=count.getCount()*100/limitFiles;
+        if(percent==100){System.out.print("\r"+percent+"% ["+progressBar+">"+space+"]");}
+        System.out.println();
+        System.out.println(title+" завершено");
     }
     public static void writeToByte(Object o,String name) {
         ObjectOutputStream oos = null;
@@ -145,5 +158,15 @@ public class PhoneBook extends Thread{
         }
         return u;
     }
-
+    private class Count{
+        public int getCount(){return -1;}
+    }
+    private class CountW extends Count{
+        @Override
+        public int getCount(){return countWrite;}
+    }
+    private class CountR extends Count{
+        @Override
+        public int getCount(){return countRead;}
+    }
 }
